@@ -174,4 +174,4 @@ This project is licensed under the MIT License - see the [LICENSE.md](https://gi
 
 ## Author
 
-Made with ❤️ by [NY Samnang](https://github.com/nysamnang).
+Made with ❤️ by [NY Samnang](https://github.com/nysamnang) and added full screen functionality with ❤️ by [DC](https://github.com/dcheema6)
