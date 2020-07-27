@@ -105,7 +105,6 @@ class RBSheet extends Component {
                 }
                 // Swiping up: only registered if not full screen
                 else if (!this.state.isFullScreen) {
-                    console.log(gestureState.dy)
                     Animated.timing(animatedHeight, {
                         useNativeDriver: false,
                         toValue: this.props.height - gestureState.dy,
