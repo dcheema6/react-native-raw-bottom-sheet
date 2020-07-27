@@ -129,9 +129,12 @@ renderItem = (item, index) => (
 | ---------------- | -------- | ------------------------------------------------------- | -------- |
 | animationType    | string   | Background animation ("none", "fade", "slide")          | "none"   |
 | height           | number   | Height of Bottom Sheet                                  | 260      |
+| fullScreenMarginTop | number   | Set the margin from the top for full screen mode.    | 0        |
 | minClosingHeight | number   | Minimum height of Bottom Sheet before close             | 0        |
+| swipeGestureMinLength | number   | Length user needs to swipe before it's registered as swipe up or down action | 150        |
 | openDuration     | number   | Open Bottom Sheet animation duration                    | 300 (ms) |
 | closeDuration    | number   | Close Bottom Sheet animation duration                   | 200 (ms) |
+| fullScreenEnabled  | boolean  | Enable full screen mode on swipe up                   | false    |
 | closeOnDragDown  | boolean  | Use gesture drag down to close Bottom Sheet             | false    |
 | dragFromTopOnly  | boolean  | Drag only the top area of the draggableIcon to close Bottom Sheet instead of the whole content | false    |
 | closeOnPressMask | boolean  | Press the area outside to close Bottom Sheet            | true     |
@@ -157,6 +160,8 @@ customStyles: {
 | ----------- | ------------------ |
 | open        | Open Bottom Sheet  |
 | close       | Close Bottom Sheet |
+| fullScreen  | Switch to fullscreen view  |
+| minimize    | Switch to default view |
 
 ## Note
 
