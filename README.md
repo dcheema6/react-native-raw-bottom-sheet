@@ -10,27 +10,11 @@
 - Customize Whatever You Like
 - Support Drag Down Gesture
 - Support All Orientations
-- Support Both Android And iOS
+- Support iOS
 - Smooth Animation
 - Zero Configuration
 - Zero dependency
 - Top Search Ranking (react native bottom sheet) at [npms.io](https://npms.io/search?q=react%20native%20bottom%20sheet)
-
-|                                                      Showcase iOS                                                      |                                                    Showcase Android                                                    |
-| :--------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------: |
-| ![](https://raw.githubusercontent.com/nysamnang/stock-images/master/react-native-raw-bottom-sheet/RNRBS-IOS-2.0.3.gif) | ![](https://raw.githubusercontent.com/nysamnang/stock-images/master/react-native-raw-bottom-sheet/RNRBS-AOS-2.0.3.gif) |
-
-## Installation
-
-```
-npm i react-native-raw-bottom-sheet --save
-```
-
-### or
-
-```
-yarn add react-native-raw-bottom-sheet
-```
 
 ## Example
 
@@ -135,7 +119,7 @@ renderItem = (item, index) => (
 | openDuration     | number   | Open Bottom Sheet animation duration                    | 300 (ms) |
 | closeDuration    | number   | Close Bottom Sheet animation duration                   | 200 (ms) |
 | fullScreenEnabled  | boolean  | Enable full screen mode on swipe up                   | false    |
-| closeOnDragDown  | boolean  | Use gesture drag down to close Bottom Sheet             | false    |
+| enableGestures   | boolean  | Enable gestures                                         | false    |
 | dragFromTopOnly  | boolean  | Drag only the top area of the draggableIcon to close Bottom Sheet instead of the whole content | false    |
 | closeOnPressMask | boolean  | Press the area outside to close Bottom Sheet            | true     |
 | closeOnPressBack | boolean  | Press back android to close Bottom Sheet (Android only) | true     |
