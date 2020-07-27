@@ -147,14 +147,10 @@ customStyles: {
 | fullScreen  | Switch to fullscreen view  |
 | minimize    | Switch to default view |
 
-## Note
-
-- If you combind `RBSheet` with <a href="https://github.com/kmagiera/react-native-gesture-handler" target="_blank">react-native-gesture-handler</a>, the components inside RBSheet will not fire onPress event on Android [#37](https://github.com/nysamnang/react-native-raw-bottom-sheet/issues/37).
-- The demo source codes are in `example folder`.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/nysamnang/react-native-raw-bottom-sheet/blob/master/LICENSE) file for details
+Pending [MIT]
 
 ## Author
 
