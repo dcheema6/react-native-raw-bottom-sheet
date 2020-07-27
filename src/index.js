@@ -1,54 +1,54 @@
-import React, { Component } from "react";
-import PropTypes from "prop-types";
+/** @format */
+
+import React from 'react'
+import PropTypes from 'prop-types'
 import {
-  View,
-  KeyboardAvoidingView,
-  Modal,
-  TouchableOpacity,
-  Animated,
-  PanResponder,
-  Platform,
-  Dimensions,
-} from "react-native";
-import styles from "./style";
+    View,
+    KeyboardAvoidingView,
+    Modal,
+    TouchableOpacity,
+    Animated,
+    PanResponder,
+    Platform,
+    Dimensions,
+} from 'react-native'
+import { IPHONE_MODELS, DEVICE_MODEL } from '../../../Utils/Constants'
 
-const SUPPORTED_ORIENTATIONS = [
-  "portrait",
-  "portrait-upside-down",
-];
+const PADDING_TOP =
+    Platform.OS === 'ios' && IPHONE_MODELS.includes(DEVICE_MODEL) ? 25 : 40
+const FULL_SCREEN_HEIGHT = Dimensions.get('window').height - PADDING_TOP
+const SUPPORTED_ORIENTATIONS = ['portrait', 'portrait-upside-down']
 
-class RBSheet extends Component {
-  constructor(props) {
+/**
+ * This bottom sheet uses https://github.com/nysamnang/react-native-raw-bottom-sheet#readme
+ * and follows the pattern https://developer.apple.com/design/human-interface-guidelines/ios/app-architecture/modality/
+ */
+class BottomSheet extends React.PureComponent {
+    constructor(props) {
         super(props)
         this.state = {
             modalVisible: false,
             isFullScreen: false,
-            fullScreenHeight: Dimensions.get('window').height - props.fullScreenMarginTop,
             animatedHeight: new Animated.Value(0),
-            pan: new Animated.ValueXY(),
         }
 
         this.createPanResponder(props)
     }
 
     fullScreen() {
-      const { animatedHeight, fullScreenHeight } = this.state
-        Animated.timing(animatedHeight, {
-            toValue: fullScreenHeight,
+        Animated.timing(this.state.animatedHeight, {
+            toValue: FULL_SCREEN_HEIGHT,
             duration: this.props.openDuration,
             useNativeDriver: false,
-        }).start()
-        this.setState({ isFullScreen: true })
+        }).start(() => this.setState({ isFullScreen: true }))
     }
 
     minimize() {
-      const { animatedHeight } = this.state     
-        Animated.timing(animatedHeight, {
+        Animated.timing(this.state.animatedHeight, {
             toValue: this.props.height,
             duration: this.props.closeDuration,
             useNativeDriver: false,
-        }).start()
-        this.setState({ isFullScreen: false })
+        }).start(() => this.setState({ isFullScreen: false }))
     }
 
     setModalVisible(visible, props) {
@@ -60,7 +60,7 @@ class RBSheet extends Component {
             onClose,
             onOpen,
         } = this.props
-        const { animatedHeight, pan } = this.state
+        const { animatedHeight } = this.state
         if (visible) {
             this.setState({ modalVisible: visible })
             if (typeof onOpen === 'function') onOpen(props)
@@ -75,7 +75,6 @@ class RBSheet extends Component {
                 toValue: minClosingHeight,
                 duration: closeDuration,
             }).start(() => {
-                pan.setValue({ x: 0, y: 0 })
                 this.setState({
                     modalVisible: visible,
                     animatedHeight: new Animated.Value(0),
@@ -87,16 +86,20 @@ class RBSheet extends Component {
     }
 
     createPanResponder(props) {
-        const { fullScreenEnabled, closeOnDragDown, height, swipeGestureMinLength } = props
-        const { pan, animatedHeight } = this.state
+        const {
+            fullScreenEnabled,
+            enableGestures,
+            height,
+            swipeGestureMinLength,
+        } = props
         this.panResponder = PanResponder.create({
-            onStartShouldSetPanResponder: () => closeOnDragDown,
+            onStartShouldSetPanResponder: () => enableGestures,
             onPanResponderMove: (e, gestureState) => {
+                const { isFullScreen, animatedHeight } = this.state
                 // Swiping down
                 if (gestureState.dy > 0) {
-                    let toValue = fullScreenHeight - gestureState.dy
-                    if (!this.state.isFullScreen)
-                        toValue = this.props.height - gestureState.dy
+                    let toValue = FULL_SCREEN_HEIGHT - gestureState.dy
+                    if (!isFullScreen) toValue = height - gestureState.dy
                     Animated.timing(animatedHeight, {
                         useNativeDriver: false,
                         toValue,
@@ -104,34 +107,33 @@ class RBSheet extends Component {
                     }).start()
                 }
                 // Swiping up: only registered if not full screen
-                else if (!this.state.isFullScreen) {
+                else if (!isFullScreen) {
                     Animated.timing(animatedHeight, {
                         useNativeDriver: false,
-                        toValue: this.props.height - gestureState.dy,
+                        toValue: height - gestureState.dy,
                         duration: 1,
                     }).start()
                 }
             },
             onPanResponderRelease: (e, gestureState) => {
+                const { isFullScreen, animatedHeight } = this.state
                 if (
                     gestureState.dy < -swipeGestureMinLength &&
                     fullScreenEnabled &&
-                    !this.state.isFullScreen
+                    !isFullScreen
                 ) {
                     this.fullScreen()
-                } else if (
-                    this.state.isFullScreen &&
-                    gestureState.dy > swipeGestureMinLength
-                ) {
-                    this.minimize()
-                } else if (
-                    !this.state.isFullScreen &&
-                    gestureState.dy > swipeGestureMinLength
-                ) {
-                    this.setModalVisible(false)
+                } else if (gestureState.dy > swipeGestureMinLength) {
+                    if (
+                        !isFullScreen ||
+                        gestureState.dy > swipeGestureMinLength * 4 ||
+                        gestureState.vy > 3
+                    )
+                        this.setModalVisible(false)
+                    else this.minimize()
                 } else {
                     Animated.spring(animatedHeight, {
-                        toValue: this.props.height,
+                        toValue: height,
                         useNativeDriver: false,
                     }).start()
                 }
@@ -150,7 +152,7 @@ class RBSheet extends Component {
     render() {
         const {
             animationType,
-            closeOnDragDown,
+            enableGestures,
             dragFromTopOnly,
             closeOnPressMask,
             closeOnPressBack,
@@ -158,10 +160,7 @@ class RBSheet extends Component {
             customStyles,
             keyboardAvoidingViewEnabled,
         } = this.props
-        const { animatedHeight, pan, modalVisible } = this.state
-        const panStyle = {
-            transform: pan.getTranslateTransform(),
-        }
+        const { animatedHeight, modalVisible } = this.state
 
         return (
             <Modal
@@ -186,13 +185,12 @@ class RBSheet extends Component {
                     <Animated.View
                         {...(!dragFromTopOnly && this.panResponder.panHandlers)}
                         style={[
-                            panStyle,
                             styles.container,
                             { height: animatedHeight },
                             customStyles.container,
                         ]}
                     >
-                        {closeOnDragDown && (
+                        {enableGestures && (
                             <View
                                 {...(dragFromTopOnly &&
                                     this.panResponder.panHandlers)}
@@ -214,44 +212,75 @@ class RBSheet extends Component {
     }
 }
 
-RBSheet.propTypes = {
-  animationType: PropTypes.oneOf(["none", "slide", "fade"]),
-  height: PropTypes.number,
-  fullScreenMarginTop: PropTypes.number,
-  minClosingHeight: PropTypes.number,
-  swipeGestureMinLength: PropTypes.number,
-  openDuration: PropTypes.number,
-  closeDuration: PropTypes.number,
-  fullScreenEnabled: PropTypes.bool,
-  closeOnDragDown: PropTypes.bool,
-  closeOnPressMask: PropTypes.bool,
-  dragFromTopOnly: PropTypes.bool,
-  closeOnPressBack: PropTypes.bool,
-  keyboardAvoidingViewEnabled: PropTypes.bool,
-  customStyles: PropTypes.objectOf(PropTypes.object),
-  onClose: PropTypes.func,
-  onOpen: PropTypes.func,
-  children: PropTypes.node
-};
+const styles = {
+    wrapper: {
+        flex: 1,
+        backgroundColor: '#00000077',
+    },
+    mask: {
+        flex: 1,
+        backgroundColor: 'transparent',
+    },
+    container: {
+        backgroundColor: '#fff',
+        width: '100%',
+        height: 0,
+        overflow: 'hidden',
+    },
+    draggableContainer: {
+        width: '100%',
+        alignItems: 'center',
+        backgroundColor: 'transparent',
+    },
+    draggableIcon: {
+        width: 35,
+        height: 5,
+        borderRadius: 5,
+        margin: 10,
+        backgroundColor: '#ccc',
+    },
+}
 
-RBSheet.defaultProps = {
-  animationType: "none",
-  height: 260,
-  fullScreenMarginTop: 0,
-  minClosingHeight: 0,
-  swipeGestureMinLength: 150,
-  openDuration: 300,
-  closeDuration: 200,
-  fullScreenEnabled: true,
-  closeOnDragDown: false,
-  dragFromTopOnly: false,
-  closeOnPressMask: true,
-  closeOnPressBack: true,
-  keyboardAvoidingViewEnabled: Platform.OS === "ios",
-  customStyles: {},
-  onClose: null,
-  onOpen: null,
-  children: <View />
-};
+export default BottomSheet
 
-export default RBSheet;
+BottomSheet.propTypes = {
+    animationType: PropTypes.oneOf(['none', 'slide', 'fade']),
+    height: PropTypes.number,
+    minClosingHeight: PropTypes.number,
+    swipeGestureMinLength: PropTypes.number,
+    openDuration: PropTypes.number,
+    closeDuration: PropTypes.number,
+    fullScreenEnabled: PropTypes.bool,
+    enableGestures: PropTypes.bool,
+    closeOnPressMask: PropTypes.bool,
+    dragFromTopOnly: PropTypes.bool,
+    closeOnPressBack: PropTypes.bool,
+    keyboardAvoidingViewEnabled: PropTypes.bool,
+    customStyles: PropTypes.objectOf(PropTypes.object),
+    onClose: PropTypes.func,
+    onOpen: PropTypes.func,
+    children: PropTypes.node,
+}
+
+BottomSheet.defaultProps = {
+    animationType: 'none',
+    height: 150,
+    minClosingHeight: 0,
+    swipeGestureMinLength: 65,
+    openDuration: 250,
+    closeDuration: 250,
+    fullScreenEnabled: false,
+    enableGestures: true,
+    dragFromTopOnly: false,
+    closeOnPressMask: true,
+    closeOnPressBack: true,
+    keyboardAvoidingViewEnabled: Platform.OS === 'ios',
+    customStyles: {
+        borderTopRightRadius: 5,
+        borderTopLeftRadius: 5,
+        paddingHorizontal: 16,
+    },
+    onClose: null,
+    onOpen: null,
+    children: <View />,
+}
